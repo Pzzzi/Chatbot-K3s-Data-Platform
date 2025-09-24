@@ -1,0 +1,94 @@
+import sqlite3
+import pandas as pd
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.docstore.document import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+DB_PATH = "Dataset/data/finance.db"
+REPORTS_PATH = "Dataset/data/company_reports.csv"  # <-- new descriptive data
+
+# 1. Load descriptive reports
+def load_reports():
+    reports_df = pd.read_csv(REPORTS_PATH)
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,     # ~750 words
+        chunk_overlap=100,   # preserve context
+        length_function=len
+    )
+
+    docs = []
+    for _, row in reports_df.iterrows():
+        chunks = text_splitter.split_text(row["report"])
+        for i, chunk in enumerate(chunks):
+            docs.append(
+                Document(
+                    page_content=chunk,
+                    metadata={
+                        "table": "company_reports",
+                        "company_id": row["company_id"],
+                        "company_name": row["company_name"],
+                        "chunk_id": i,
+                    },
+                )
+            )
+    return docs
+
+# 2. (Optional) Still load structured data if you want hybrid RAG
+def load_structured_data():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    docs = []
+
+    # Companies
+    cursor.execute("SELECT company_id, name, sector, headquarters, founded, revenue_musd FROM companies;")
+    for company_id, name, sector, hq, founded, revenue in cursor.fetchall():
+        text = f"Company {name} in the {sector} sector, headquartered in {hq}, founded in {founded}, with revenue of {revenue} million USD."
+        docs.append(Document(page_content=text, metadata={"table": "companies", "id": company_id, "name": name}))
+
+    # Deals
+    cursor.execute("SELECT deal_id, company_id, deal_type, value_musd, date, advisor FROM deals;")
+    for deal_id, company_id, deal_type, value, date, advisor in cursor.fetchall():
+        text = f"Deal of type {deal_type} with value {value} million USD on {date}, advised by {advisor}, for company ID {company_id}."
+        docs.append(Document(page_content=text, metadata={"table": "deals", "id": deal_id, "company_id": company_id}))
+
+    # Sectors
+    cursor.execute("SELECT sector_id, sector_name, avg_valuation_multiple, market_growth_pct FROM sectors;")
+    for sector_id, name, multiple, growth in cursor.fetchall():
+        text = f"Sector {name} has an average valuation multiple of {multiple} and a market growth of {growth} percent."
+        docs.append(Document(page_content=text, metadata={"table": "sectors", "id": sector_id, "name": name}))
+
+    conn.close()
+    return docs
+
+# 3. Create vectorstore
+def create_vectorstore(docs):
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    vectorstore = Chroma.from_documents(docs, embeddings, persist_directory="./chroma_db")
+    vectorstore.persist()
+    return vectorstore
+
+if __name__ == "__main__":
+    # Load descriptive reports (main RAG data)
+    report_docs = load_reports()
+    
+    # Optionally add structured DB docs too
+    structured_docs = load_structured_data()
+    
+    # Combine them (if you want hybrid RAG, else just use report_docs)
+    all_docs = report_docs + structured_docs  
+
+    vs = create_vectorstore(all_docs)
+
+    # ✅ Print summary
+    print("✅ Vectorstore created")
+    print(f"   - Total documents stored: {len(all_docs)}")
+    
+    # Count how many chunks per report
+    from collections import Counter
+    report_counts = Counter([d.metadata.get("company_id") for d in report_docs])
+    for company_id, count in report_counts.items():
+        company_name = next(d.metadata["company_name"] for d in report_docs if d.metadata["company_id"] == company_id)
+        print(f"   - {company_name}: {count} chunks")
+

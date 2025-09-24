@@ -1,0 +1,51 @@
+deal_id,company_id,deal_type,value_musd,date,advisor
+1,14,Acquisition,51.54,2025-01-25,K3 Capital
+2,12,Restructuring,194.25,2023-10-26,PwC
+3,2,Restructuring,195.23,2025-04-24,EY
+4,15,Restructuring,128.97,2024-11-30,PwC
+5,14,Acquisition,130.28,2023-02-27,PwC
+6,5,Disposal,59.99,2023-11-22,Deloitte
+7,8,Fundraising,117.68,2023-12-13,Deloitte
+8,19,Acquisition,30.92,2025-04-27,Deloitte
+9,18,Disposal,150.81,2023-02-03,K3 Capital
+10,16,Fundraising,67.37,2025-07-16,EY
+11,9,Acquisition,85.46,2024-06-19,PwC
+12,5,Disposal,173.74,2023-06-07,EY
+13,7,Fundraising,182.4,2025-07-27,PwC
+14,7,Disposal,88.5,2022-10-28,EY
+15,7,Disposal,150.68,2025-02-23,K3 Capital
+16,16,Restructuring,138.14,2025-01-11,Deloitte
+17,15,Restructuring,31.8,2023-09-23,PwC
+18,4,Acquisition,192.62,2025-08-18,PwC
+19,19,Fundraising,15.98,2023-12-20,Deloitte
+20,18,Restructuring,36.28,2022-12-04,Deloitte
+21,2,Fundraising,181.81,2025-02-27,EY
+22,2,Disposal,10.07,2025-04-26,K3 Capital
+23,5,Disposal,147.48,2025-03-27,PwC
+24,5,Fundraising,156.02,2023-08-23,Deloitte
+25,14,Fundraising,188.28,2025-09-03,Deloitte
+26,17,Restructuring,147.75,2022-12-22,EY
+27,14,Disposal,131.63,2024-06-11,PwC
+28,9,Acquisition,169.52,2023-06-07,EY
+29,9,Restructuring,111.4,2024-01-11,PwC
+30,5,Acquisition,52.06,2023-04-27,K3 Capital
+31,4,Fundraising,39.97,2024-06-18,K3 Capital
+32,13,Acquisition,34.75,2022-12-22,PwC
+33,5,Restructuring,101.96,2023-04-28,Deloitte
+34,15,Restructuring,137.89,2024-11-21,EY
+35,7,Fundraising,49.73,2024-02-06,EY
+36,16,Fundraising,121.0,2023-08-09,Deloitte
+37,14,Fundraising,77.48,2023-01-11,PwC
+38,17,Restructuring,127.29,2023-04-08,Deloitte
+39,4,Acquisition,49.65,2025-06-27,K3 Capital
+40,12,Acquisition,102.94,2022-09-27,PwC
+41,6,Disposal,66.24,2025-08-23,EY
+42,2,Acquisition,183.76,2023-11-23,EY
+43,15,Acquisition,24.87,2022-12-09,PwC
+44,16,Disposal,198.89,2023-05-12,K3 Capital
+45,3,Acquisition,153.94,2023-10-10,EY
+46,12,Acquisition,32.96,2023-10-07,K3 Capital
+47,8,Acquisition,190.88,2024-10-30,PwC
+48,19,Restructuring,34.94,2023-06-05,Deloitte
+49,7,Acquisition,8.0,2024-01-22,EY
+50,15,Fundraising,178.61,2025-04-01,K3 Capital

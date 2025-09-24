@@ -1,0 +1,5 @@
+[
+  "Table: companies\nColumns: company_id (INTEGER), name (TEXT), sector (TEXT), headquarters (TEXT), founded (INTEGER), revenue_musd (REAL)",
+  "Table: deals\nColumns: deal_id (INTEGER), company_id (INTEGER), deal_type (TEXT), value_musd (REAL), date (TEXT), advisor (TEXT)",
+  "Table: sectors\nColumns: sector_id (INTEGER), sector_name (TEXT), avg_valuation_multiple (INTEGER), market_growth_pct (REAL)"
+]

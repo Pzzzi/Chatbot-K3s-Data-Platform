@@ -1,0 +1,50 @@
+import sqlite3
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+import os
+import json
+
+DB_PATH = "data/finance.db"
+INDEX_PATH = "embeddings/schema.index"
+SCHEMA_JSON = "embeddings/schema.json"
+
+def extract_schema():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    schema_docs = []
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+
+    for table_name, in tables:
+        cursor.execute(f"PRAGMA table_info({table_name});")
+        columns = cursor.fetchall()
+        column_str = ", ".join([f"{col[1]} ({col[2]})" for col in columns])
+        schema_doc = f"Table: {table_name}\nColumns: {column_str}"
+        schema_docs.append(schema_doc)
+
+    conn.close()
+    return schema_docs
+
+def build_index(schema_docs):
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    embeddings = model.encode(schema_docs, convert_to_numpy=True)
+
+    dim = embeddings.shape[1]
+    index = faiss.IndexFlatL2(dim)
+    index.add(embeddings)
+
+    os.makedirs("embeddings", exist_ok=True)
+    faiss.write_index(index, INDEX_PATH)
+
+    with open(SCHEMA_JSON, "w") as f:
+        json.dump(schema_docs, f, indent=2)
+
+    print(f"✅ FAISS index saved at {INDEX_PATH}")
+    print(f"✅ Schema docs saved at {SCHEMA_JSON}")
+
+if __name__ == "__main__":
+    schema_docs = extract_schema()
+    build_index(schema_docs)

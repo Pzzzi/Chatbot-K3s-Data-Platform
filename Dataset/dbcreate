@@ -1,0 +1,26 @@
+import sqlite3
+import pandas as pd
+from pathlib import Path
+
+def create_finance_db():
+    Path("data").mkdir(exist_ok=True)
+
+    conn = sqlite3.connect("data/finance.db")
+
+    companies = pd.read_csv("data/companies.csv")
+    report = pd.read_csv("data/company_reports.csv")
+    deals = pd.read_csv("data/deals.csv")
+    sectors = pd.read_csv("data/sectors.csv")
+
+    companies.to_sql("companies", conn, if_exists="replace", index=False)
+    report.to_sql("report", conn, if_exists="replace", index=False)
+    deals.to_sql("deals", conn, if_exists="replace", index=False)
+    sectors.to_sql("sectors", conn, if_exists="replace", index=False)
+
+    conn.commit()
+    conn.close()
+    print("✅ Finance database created at data/finance.db")
+
+if __name__ == "__main__":
+    create_finance_db()
+

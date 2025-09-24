@@ -1,0 +1,26 @@
+import sqlite3
+
+# Path to your SQLite DB file
+DB_PATH = "data/finance.db"
+
+def connect_db():
+    """Connect to SQLite database."""
+    conn = sqlite3.connect(DB_PATH)
+    return conn
+
+def test_connection():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Run a sample query - check first 5 companies
+    cursor.execute("SELECT * FROM companies LIMIT 5;")
+    rows = cursor.fetchall()
+
+    print("Sample rows from companies table:")
+    for row in rows:
+        print(row)
+
+    conn.close()
+
+if __name__ == "__main__":
+    test_connection()

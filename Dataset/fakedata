@@ -1,0 +1,104 @@
+import os
+import pandas as pd
+import random
+from dotenv import load_dotenv
+from faker import Faker
+from langchain_groq import ChatGroq
+from tqdm import tqdm
+
+load_dotenv()
+fake = Faker()
+
+# -----------------------
+# 1. Load companies
+# -----------------------
+companies_df = pd.read_csv("data/companies.csv")
+
+# -----------------------
+# 2. Generate fake deals for richness
+# -----------------------
+deal_types = ["Acquisition", "Fundraising", "Restructuring", "Disposal"]
+advisors = ["EY", "PwC", "Deloitte", "K3 Capital"]
+
+all_deals = {}
+for idx, row in companies_df.iterrows():
+    num_deals = random.randint(1, 4)  # 1-4 deals per company
+    deals = []
+    for _ in range(num_deals):
+        deal = {
+            "deal_type": random.choice(deal_types),
+            "value_musd": round(random.uniform(10, 200), 2),
+            "date": fake.date_between(start_date='-3y', end_date='today').strftime("%Y-%m-%d"),
+            "advisor": random.choice(advisors)
+        }
+        deals.append(deal)
+    all_deals[row["company_id"]] = deals
+
+# -----------------------
+# 3. Initialize ChatGroq LLM
+# -----------------------
+llm = ChatGroq(
+    model="moonshotai/kimi-k2-instruct-0905",
+    api_key=os.environ["GROQ_API_KEY"],
+    temperature=0.2
+)
+
+# -----------------------
+# 4. Function to create a prompt for each company
+# -----------------------
+def create_prompt(company, deals):
+    deals_text = " ".join(
+        [f"{d['deal_type']} of ${d['value_musd']}M on {d['date']} advised by {d['advisor']}." for d in deals]
+    )
+    
+    prompt = f"""
+Company Data:
+Name: {company['name']}
+Sector: {company['sector']}
+Headquarters: {company['headquarters']}
+Founded: {company['founded']}
+Revenue: ${company['revenue_musd']}M
+Recent Deals: {deals_text}
+
+Task:
+Generate a detailed professional company report of about 2,000 words.
+Include:
+- Overview
+- Financial Performance
+- Deals and Transactions
+- Market & Sector Context
+- Future Outlook
+- Summary / Key Takeaways
+
+Make the report unique, well-written, and use the data above as the foundation.
+Include comparisons, context, and explanations.
+"""
+    return prompt
+
+# -----------------------
+# 5. Generate reports
+# -----------------------
+reports = []
+
+for idx, row in tqdm(companies_df.iterrows(), total=companies_df.shape[0]):
+    company = row.to_dict()
+    deals = all_deals[company["company_id"]]
+    
+    prompt = create_prompt(company, deals)
+    
+    # Sectioned approach could be used here for long reports
+    report_text = llm.invoke(prompt)  # returns a string with full report
+    reports.append({
+        "company_id": company["company_id"],
+        "company_name": company["name"],
+        "report": report_text
+    })
+
+# -----------------------
+# 6. Save reports
+# -----------------------
+reports_df = pd.DataFrame(reports)
+reports_df.to_csv("data/company_reports.csv", index=False)
+
+print("Reports generated and saved to data/company_reports.csv")
+
